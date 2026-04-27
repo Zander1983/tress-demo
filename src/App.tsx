@@ -871,10 +871,12 @@ export default function App() {
 
               <div>
 
-
+                {baseline && (
                   <span className="text-sm text-slate-700">
-                    Closest audited buildings: {baseline.chosen.map(b => b.building).join(", ")}
+                    Closest audited buildings: {baseline.chosen?.map(b => b.building).join(", ")}
                   </span>
+
+                  )}
 
                </div>
           </div>
