@@ -43,7 +43,7 @@ type BaselineResult = {
   costPerKwh: number;
   currentEmissions: number;
   currentCost: number;
-  chosen: []
+  chosen: BuildingRecord[];
 };
 
 type PredictionResult = {
