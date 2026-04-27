@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
 
+const STANDARD_SCENARIOS = [
+  "ROO1_Deep_ASHP",
+  "ROO2_Medium_ASHP",
+  "ROO3_Deep_ASHP_Biomass",
+  "ROO4_Medium_Biomass",
+];
+
 type ScenarioMetrics = {
   upgradedEui: number;
   upgradedEmissionsTco2: number;
@@ -391,6 +398,39 @@ const dataset: BuildingRecord[] = [
   },
 ];
 
+function getScenario(
+  building: BaselineNeighbour,
+  standardScenario: string
+): ScenarioMetrics | null {
+  const match = Object.entries(building.scenarios).find(
+    ([key]) => normaliseScenario(key) === standardScenario
+  );
+
+  return match ? match[1] : null;
+}
+
+function normaliseScenario(name: string): string | null {
+  if (name.includes("Deep") && name.includes("ASHP") && !name.includes("Biomass")) {
+    return "ROO1_Deep_ASHP";
+  }
+  if (name.includes("Medium") && name.includes("ASHP")) {
+    return "ROO2_Medium_ASHP";
+  }
+  if (name.includes("Deep") && name.includes("Biomass")) {
+    return "ROO3_Deep_ASHP_Biomass";
+  }
+  if (name.includes("Medium") && name.includes("Biomass")) {
+    return "ROO4_Medium_Biomass";
+  }
+  if (name.includes("Major") && name.includes("ASHP")) {
+    return "ROO1_Deep_ASHP"; // treat as deep
+  }
+  if (name.includes("Fabric")) {
+    return "ROO1_Deep_ASHP"; // treat as deep fabric upgrade
+  }
+  return null;
+}
+
 function mean(values: number[]): number {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
@@ -633,13 +673,7 @@ export default function App() {
     };
   }, [filtered, stats, year, floorArea, floors, energyProvided, energyKwh, k]);
 
-  const allScenarioNames = useMemo(() => {
-    const names = new Set<string>();
-    filtered.forEach((d) =>
-      Object.keys(d.scenarios).forEach((s) => names.add(s))
-    );
-    return Array.from(names);
-  }, [filtered]);
+  const allScenarioNames = STANDARD_SCENARIOS;
 
   const predictions = useMemo<PredictionResult[]>(() => {
     if (!baseline) return [];
@@ -648,16 +682,29 @@ export default function App() {
     const results: PredictionResult[] = [];
 
     for (const scenario of allScenarioNames) {
-      const supports = chosen.filter((n) => n.scenarios[scenario]);
+      const supports = chosen.filter((n) =>
+        Object.keys(n.scenarios).some(
+          (s) => normaliseScenario(s) === scenario
+        )
+      );
       if (!supports.length) continue;
+
+      const getScenario = (n: BaselineNeighbour) => {
+        const match = Object.entries(n.scenarios).find(
+          ([key]) => normaliseScenario(key) === scenario
+        );
+
+        return match?.[1];
+      };
 
       const avg = (fn: (n: BaselineNeighbour) => number): number =>
         supports.reduce((sum, n) => sum + fn(n), 0) / supports.length;
 
-      const upgradedEui = avg((n) => n.scenarios[scenario].upgradedEui);
-      const capexPerM2 = avg(
-        (n) => n.scenarios[scenario].capexEur / n.floorAreaM2
-      );
+      const upgradedEui = avg((n) => getScenario(n)?.upgradedEui ?? 0);
+      const capexPerM2 = avg((n) => {
+        const s = getScenario(n);
+        return s ? s.capexEur / n.floorAreaM2 : 0;
+      });
       const upgradedEnergy = upgradedEui * floorArea;
       const upgradedEmissions = upgradedEnergy * baseline.emissionFactor;
       const upgradedCost = upgradedEnergy * baseline.costPerKwh;
