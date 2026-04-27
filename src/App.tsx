@@ -398,16 +398,7 @@ const dataset: BuildingRecord[] = [
   },
 ];
 
-function getScenario(
-  building: BaselineNeighbour,
-  standardScenario: string
-): ScenarioMetrics | null {
-  const match = Object.entries(building.scenarios).find(
-    ([key]) => normaliseScenario(key) === standardScenario
-  );
 
-  return match ? match[1] : null;
-}
 
 function normaliseScenario(name: string): string | null {
   if (name.includes("Deep") && name.includes("ASHP") && !name.includes("Biomass")) {
