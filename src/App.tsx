@@ -43,6 +43,7 @@ type BaselineResult = {
   costPerKwh: number;
   currentEmissions: number;
   currentCost: number;
+  chosen: []
 };
 
 type PredictionResult = {
@@ -127,13 +128,15 @@ const dataset: BuildingRecord[] = [
   {
     building: "Lissanalta House",
     type: "Office/Public_Admin",
-    year: 1994,
-    energyKwh: 248930,
-    floorAreaM2: 1460,
+    floorAreaM2: 4430,
+    energyKwh: 737725,
+    currentEui: 167,
+    currentEmissionsTco2: 150.6,
+    currentEnergyCostEur: 141563,
+    year: 2007,
+
     floors: 2,
-    currentEui: 170.5,
-    currentEmissionsTco2: 47,
-    currentEnergyCostEur: 38250,
+    
     scenarios: {
       ROO1_Deep_ASHP: {
         upgradedEui: 70,
@@ -188,13 +191,15 @@ const dataset: BuildingRecord[] = [
   {
     building: "Merchants Quay",
     type: "Office/Public_Admin",
-    year: 1988,
-    energyKwh: 364520,
-    floorAreaM2: 2135,
+
+    floorAreaM2: 6960,
+    energyKwh: 1198866,
+    currentEui: 172,
+    currentEmissionsTco2: 254.1,
+    currentEnergyCostEur: 182371,
+    year: 1990,
     floors: 3,
-    currentEui: 170.735363,
-    currentEmissionsTco2: 69,
-    currentEnergyCostEur: 61200,
+
     scenarios: {
       ROO1_Deep_ASHP: {
         upgradedEui: 75,
@@ -254,7 +259,9 @@ const dataset: BuildingRecord[] = [
     floorAreaM2: 8809,
     floors: 1,
     currentEui: 134.8062209,
-    currentEmissionsTco2: 194,
+    
+    currentEmissionsTco2: 191.5,
+
     currentEnergyCostEur: 187456,
     scenarios: {
       Upgrade_Major_ASHP: {
@@ -287,7 +294,7 @@ const dataset: BuildingRecord[] = [
     building: "Tralee Sports Complex",
     type: "Leisure centre",
     year: 2000,
-    energyKwh: 2450000,
+    energyKwh: 1750000,
     floorAreaM2: 7200,
     floors: 2,
     currentEui: 340.2777778,
@@ -324,12 +331,13 @@ const dataset: BuildingRecord[] = [
     building: "Ennis Leisure Complex",
     type: "Leisure centre",
     year: 2005,
-    energyKwh: 1850000,
-    floorAreaM2: 5200,
     floors: 2,
-    currentEui: 355.7692308,
-    currentEmissionsTco2: 410,
-    currentEnergyCostEur: 255000,
+    floorAreaM2: 2222,
+    energyKwh: 1916631,
+    currentEui: 863,
+    currentEmissionsTco2: 404.7,
+    currentEnergyCostEur: 209428,
+
     scenarios: {
       ROO1_Deep_ASHP: {
         upgradedEui: 115,
@@ -621,6 +629,7 @@ export default function App() {
       costPerKwh,
       currentEmissions,
       currentCost,
+      chosen
     };
   }, [filtered, stats, year, floorArea, floors, energyProvided, energyKwh, k]);
 
@@ -855,7 +864,19 @@ export default function App() {
               <label htmlFor="energy-toggle" className="text-sm text-slate-700">
                 I know the annual energy use and want to use it instead of estimating it
               </label>
+
+
             </div>
+
+
+              <div>
+
+
+                  <span className="text-sm text-slate-700">
+                    Closest audited buildings: {baseline.chosen.map(b => b.building).join(", ")}
+                  </span>
+
+               </div>
           </div>
         </div>
 
